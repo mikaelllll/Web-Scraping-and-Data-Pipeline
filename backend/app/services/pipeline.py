@@ -143,6 +143,20 @@ async def dashboard_snapshot(session: AsyncSession) -> dict:
     latest_run = await session.scalar(
         select(CollectionRun).order_by(CollectionRun.started_at.desc()).limit(1)
     )
+    latest_run_payload = None
+    if latest_run:
+        latest_run_payload = {
+            "id": str(latest_run.id),
+            "status": latest_run.status.value,
+            "started_at": latest_run.started_at,
+            "finished_at": latest_run.finished_at,
+            "collected": latest_run.collected,
+            "inserted": latest_run.inserted,
+            "duplicates": latest_run.duplicates,
+            "failures": latest_run.failures,
+            "error": latest_run.error,
+        }
+
     return {
         "metrics": {
             "sources": source_count,
@@ -176,5 +190,5 @@ async def dashboard_snapshot(session: AsyncSession) -> dict:
             }
             for article in articles
         ],
-        "latest_run": latest_run,
+        "latest_run": latest_run_payload,
     }
