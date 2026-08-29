@@ -4,6 +4,8 @@ NewsPulse separates request handling from collection. `POST /api/v1/runs` persis
 
 PostgreSQL is the system of record. Redis is a delivery mechanism, not permanent business storage. A canonical-URL constraint provides final idempotency protection even if a job is retried.
 
+A PostgreSQL transaction-level advisory lock makes run creation atomic across API replicas. This prevents two simultaneous requests from both passing the active-run check. Queue publication failures are converted into explicit failed runs and HTTP `503` responses.
+
 ## Services
 
 - **frontend:** immutable React build served by Nginx; proxies `/api` to FastAPI.
@@ -14,3 +16,4 @@ PostgreSQL is the system of record. Redis is a delivery mechanism, not permanent
 
 Horizontal scaling is possible by starting more worker replicas. Per-source concurrency controls and distributed collection locks would be the next additions before operating at internet scale.
 
+The `/health` endpoint reports process liveness. `/ready` verifies both PostgreSQL and Redis, and container orchestration uses readiness before starting dependent services.

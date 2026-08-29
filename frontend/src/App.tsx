@@ -15,7 +15,14 @@ export default function App() {
   const [query, setQuery] = useState('')
 
   const refresh = useCallback(async () => {
-    try { setData(await api.dashboard()); setError(null) }
+    try {
+      const snapshot = await api.dashboard()
+      setData(snapshot)
+      if (snapshot.latest_run && ['queued', 'running'].includes(snapshot.latest_run.status)) {
+        setActiveRun(current => current ?? snapshot.latest_run)
+      }
+      setError(null)
+    }
     catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to reach the API') }
     finally { setLoading(false) }
   }, [])
@@ -42,7 +49,7 @@ export default function App() {
   const articles = data?.articles.filter(article => article.title.toLowerCase().includes(query.toLowerCase()) || article.source_name.toLowerCase().includes(query.toLowerCase())) ?? []
 
   return <div className="shell">
-    <header className="topbar"><a className="brand" href="#top"><span><Radio size={20} /></span>NEWSPULSE<small>INTELLIGENCE</small></a><nav><a href="#trends">Trends</a><a href="#coverage">Coverage</a><a href="#pipeline">Pipeline</a></nav><div className="system-status"><i /> All systems operational</div></header>
+    <header className="topbar"><a className="brand" href="#top"><span><Radio size={20} /></span>NEWSPULSE<small>INTELLIGENCE</small></a><nav aria-label="Primary navigation"><a href="#trends">Trends</a><a href="#coverage">Coverage</a><a href="#pipeline">Pipeline</a></nav><div className="system-status"><i /> Pipeline connected</div></header>
     <main id="top">
       <section className="hero"><div className="eyebrow"><Sparkles size={14} /> LIVE TECHNOLOGY SIGNALS</div><div className="hero-layout"><div><h1>See the story<br/><em>behind the headlines.</em></h1><p>NewsPulse collects technology coverage, removes noise, groups related reporting, and surfaces the subjects gaining momentum across independent sources.</p><div className="hero-actions"><button className="primary" onClick={startCollection} disabled={Boolean(running)}>{running ? <LoaderCircle className="spin" size={18}/> : <Play size={18} fill="currentColor"/>}{running ? 'Pipeline running' : 'Collect latest news'}</button><button className="secondary" onClick={() => void refresh()}><RefreshCw size={17}/> Refresh dashboard</button></div></div><div className="pulse-orbit"><div className="orbit one"/><div className="orbit two"/><div className="pulse-core"><Activity size={36}/><span>LIVE</span></div><b className="node n1">INGEST</b><b className="node n2">NORMALIZE</b><b className="node n3">CLUSTER</b></div></div></section>
       {error && <div className="notice error">{error}</div>}
@@ -58,4 +65,3 @@ export default function App() {
 }
 
 function EmptyState() { return <div className="empty"><Database size={30}/><h3>No stories indexed yet</h3><p>Run the collection pipeline to ingest and analyze current technology coverage.</p></div> }
-

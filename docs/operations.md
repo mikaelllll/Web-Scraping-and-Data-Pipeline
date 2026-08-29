@@ -15,6 +15,14 @@ bash .devcontainer/show-url.sh
 
 If the page is not ready, confirm that `frontend`, `api`, `postgres`, and `redis` are healthy. The worker does not expose an HTTP health endpoint; its ARQ health output appears in its logs.
 
+Check API dependencies directly with:
+
+```bash
+curl --fail http://localhost:8000/ready
+```
+
+`/health` confirms that the API process is alive; `/ready` additionally verifies PostgreSQL and Redis.
+
 ## Rebuild after code changes
 
 ```bash
@@ -31,4 +39,3 @@ docker compose up --build --detach
 ```
 
 Never use the reset command if the local database contains information you intend to preserve.
-
