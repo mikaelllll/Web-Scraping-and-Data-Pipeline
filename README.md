@@ -67,6 +67,23 @@ flowchart LR
 
 If Redis cannot accept a job, the API marks the persisted run as failed and returns `503`; it never leaves a misleading permanently queued run.
 
+## Key engineering decisions
+
+- **Prefer RSS and Atom feeds:** publisher-provided feeds reduce scraping fragility and make collection boundaries and attribution clearer.
+- **Persist a run before enqueueing it:** every requested collection has a durable status, including queue failures, rather than disappearing when Redis is unavailable.
+- **Normalize before deduplication:** canonical URLs, UTC timestamps, cleaned text, and removed tracking parameters make uniqueness checks consistent across sources.
+- **Enforce idempotency in PostgreSQL:** database constraints remain the final defense against duplicate articles when collections overlap or are retried.
+- **Use explainable lexical clustering and scoring:** visitors can understand how recency, volume, and source diversity affect trends without opaque model output.
+- **Isolate source failures:** one unavailable or malformed feed does not discard useful results from successful publishers.
+
+## Trade-offs
+
+- RSS/Atom is more respectful and stable than arbitrary page scraping, but exposes only the content and metadata each publisher chooses to provide.
+- Lexical similarity is fast and transparent, though it can miss semantically related stories with very different wording.
+- Allowing one active collection prevents duplicate concurrent work but limits ingestion throughput.
+- PostgreSQL uniqueness constraints guarantee exact canonical-URL deduplication, not identification of every syndicated or rewritten duplicate.
+- Polling keeps the frontend implementation simple; server-sent events or WebSockets would reduce repeated status requests at higher usage.
+
 ## Documentation
 
 - [Architecture and data flow](docs/architecture.md)
