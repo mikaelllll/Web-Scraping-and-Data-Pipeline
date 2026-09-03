@@ -4,6 +4,10 @@ NewsPulse is a production-style data pipeline that collects public technology-ne
 
 The project stores metadata and publisher-provided excerpts only. Headlines always link to the original publisher.
 
+## Application preview
+
+[![NewsPulse web scraping and data pipeline dashboard](docs/images/application-preview.webp)](docs/images/application-preview.webp)
+
 ## Run in GitHub Codespaces
 
 1. Select **Code → Codespaces → Create codespace on main**.
